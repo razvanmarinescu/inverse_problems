@@ -14,13 +14,24 @@ imagesc(imgNew);
 alpha = 1;
 % deconvolve using preconditioned conjugate gradients
 
-%TODO write A(f) is the addBlurNoise function
-fa = pcg(@(x) ATA(x, alpha, blurSize), reshape(addBlur(imgNew, blurSize), [numel(imgNew), 1 ]));
+imgNewBlurred1d = reshape(addBlur(imgNew, blurSize), [numel(imgNew), 1 ]);
+%solve the system (A^TA + alpha*I)f = A^Tg
+fa = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d);
 
 reconstPCG = reshape(fa, size(imgNew));
 subplot(2,2,3);
 colormap(gray);
 imagesc(reconstPCG); 
+
+% solve the system using least squares: 
+imgBlurredZeros = [imgNewBlurred1d; zeros(size(imgNewBlurred1d))];
+faLsqr = lsqr(@(x) AsqrtAI(x, alpha, blurSize), imgBlurredZeros);
+
+reconstLSQR = reshape(faLsqr, size(imgNew));
+subplot(2,2,4);
+colormap(gray);
+imagesc(reconstLSQR); 
+
 
 imB = imread('boat.tiff', 'tiff');
 
