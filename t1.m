@@ -1,24 +1,27 @@
-imC = imread('Cameraman256.png', 'png');
-imC = double(imC);
+imOrig = imread('Cameraman256.png', 'png');
+imOrig = double(imOrig);
 subplot(2,2,1);
-imagesc(imC); 
+imagesc(imOrig); 
 colormap(gray);
 
-sigma = 10;
-blurSize = 1;
+sigma = 0; % high noise makes the problem also harder 
+blurSize = 2; % high blur makes the problem ill-conditioned
+alpha = 1; % high regularisation makes the edges vetry smooth
+
+
 subplot(2,2,2);
-imgNew = addBlurNoise(imC, blurSize, sigma);
+imgBlur = addBlurNoise(imOrig, blurSize, sigma);
 
-imagesc(imgNew); 
+imagesc(imgBlur); 
 
-alpha = 1;
+
 % deconvolve using preconditioned conjugate gradients
 
-imgNewBlurred1d = reshape(addBlur(imgNew, blurSize), [numel(imgNew), 1 ]);
+imgNewBlurred1d = reshape(addBlur(imgBlur, blurSize), [numel(imgBlur), 1 ]);
 %solve the system (A^TA + alpha*I)f = A^Tg
 fa = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d);
 
-reconstPCG = reshape(fa, size(imgNew));
+reconstPCG = reshape(fa, size(imgBlur));
 subplot(2,2,3);
 colormap(gray);
 imagesc(reconstPCG); 
@@ -27,7 +30,7 @@ imagesc(reconstPCG);
 imgBlurredZeros = [imgNewBlurred1d; zeros(size(imgNewBlurred1d))];
 faLsqr = lsqr(@(x) AsqrtAI(x, alpha, blurSize), imgBlurredZeros);
 
-reconstLSQR = reshape(faLsqr, size(imgNew));
+reconstLSQR = reshape(faLsqr, size(imgBlur));
 subplot(2,2,4);
 colormap(gray);
 imagesc(reconstLSQR); 
