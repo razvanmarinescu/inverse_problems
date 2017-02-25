@@ -5,8 +5,8 @@ imagesc(imOrig);
 colormap(gray);
 
 sigma = 0; % high noise makes the problem also harder 
-blurSize = 2; % high blur makes the problem ill-conditioned
-alpha = 1; % high regularisation makes the edges vetry smooth
+blurSize = 3; % high blur makes the problem ill-conditioned
+alpha = 0; % high regularisation makes the edges vetry smooth
 
 
 subplot(2,2,2);
@@ -19,7 +19,10 @@ imagesc(imgBlur);
 
 imgNewBlurred1d = reshape(addBlur(imgBlur, blurSize), [numel(imgBlur), 1 ]);
 %solve the system (A^TA + alpha*I)f = A^Tg
-fa = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d);
+tol = 1e-6;
+maxit = 100;
+fa,flag = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d,... 
+tol, maxit, [], [], imgNewBlurred1d);
 
 reconstPCG = reshape(fa, size(imgBlur));
 subplot(2,2,3);
