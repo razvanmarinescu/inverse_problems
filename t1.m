@@ -20,8 +20,8 @@ imagesc(imgBlur);
 imgNewBlurred1d = reshape(addBlur(imgBlur, blurSize), [numel(imgBlur), 1 ]);
 %solve the system (A^TA + alpha*I)f = A^Tg
 tol = 1e-6;
-maxit = 100;
-fa,flag = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d,... 
+maxit = 10;
+[fa, flag] = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d,... 
 tol, maxit, [], [], imgNewBlurred1d);
 
 reconstPCG = reshape(fa, size(imgBlur));
