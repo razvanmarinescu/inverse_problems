@@ -21,17 +21,20 @@ imgNewBlurred1d = reshape(addBlur(imgBlur, blurSize), [numel(imgBlur), 1 ]);
 %solve the system (A^TA + alpha*I)f = A^Tg
 tol = 1e-6;
 maxit = 10;
-[fa, flag] = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d,... 
+[fa,FLAG,RELRES,ITER,RESVEC] = pcg(@(x) ATA(x, alpha, blurSize), imgNewBlurred1d,... 
 tol, maxit, [], [], imgNewBlurred1d);
 
 reconstPCG = reshape(fa, size(imgBlur));
 subplot(2,2,3);
 colormap(gray);
-imagesc(reconstPCG); 
+imagesc(imOrig - reconstPCG); 
 
 % solve the system using least squares: 
 imgBlurredZeros = [imgNewBlurred1d; zeros(size(imgNewBlurred1d))];
-faLsqr = lsqr(@(x) AsqrtAI(x, alpha, blurSize), imgBlurredZeros);
+funcHandle = @(x, transpFlag) AsqrtAI(x, alpha, blurSize, transpFlag);
+t = funcHandle(imgBlurredZeros, 'transp')
+tp = funcHandle(imgNewBlurred1d, 'notransp')
+faLsqr = lsqr(funcHandle, imgBlurredZeros);
 
 reconstLSQR = reshape(faLsqr, size(imgBlur));
 subplot(2,2,4);
